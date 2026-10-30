@@ -12,7 +12,8 @@ function R() {
         : welcome()) + (S.ov == 'guide' ? ovH() : '');
     return;
   }
-  const g = S.role == 'guest';
+  const g = S.role == 'guest',
+    nm = S.people.filter(u => u.masuk).length;
   if (g && S.tab != 'info' && S.tab != 'priv') S.tab = 'info';
   const T = g
     ? [['info', '📢', 'Info Hub']]
@@ -23,7 +24,7 @@ function R() {
         ['grup', '👥', 'Grup'],
         ['prof', '🙍', 'Profil'],
       ];
-  a.innerHTML = `<div class=shell><nav>${T.map(t => `<button class="${S.tab == t[0] ? 'on' : ''}" onclick="go('${t[0]}')"><i>${t[1]}</i>${t[2]}</button>`).join('')}${g ? `<button onclick="S.role=null;S.step=1;R()"><i>🎓</i>Daftar UT</button>` : ''}</nav>
+  a.innerHTML = `<div class=shell><nav>${T.map(t => `<button class="${S.tab == t[0] ? 'on' : ''}" onclick="go('${t[0]}')"><i>${t[1]}</i>${t[2]}${t[0] == 'home' && nm ? `<b class=nb>${nm}</b>` : ''}</button>`).join('')}${g ? `<button onclick="S.role=null;S.step=1;R()"><i>🎓</i>Daftar UT</button>` : ''}</nav>
  <div class=col><header><div class=logo>UT<b>Connect</b></div><div>${g ? '<span class=m style="color:#fff9">Mode Guest</span>' : `<button onclick="go('info')">📢 Info</button>`}<button onclick="ov('guide')" aria-label="Panduan penggunaan" title="Panduan penggunaan">❓</button><button onclick="go('priv')">🔒 Privasi</button></div></header><main>${V[S.tab]()}</main></div></div>${S.ov ? ovH() : ''}`;
   const c = $('.msgs');
   if (c) {

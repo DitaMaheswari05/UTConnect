@@ -74,6 +74,18 @@ h3 {
   background: #00336622;
   color: var(--a);
 }
+.nb {
+  display: inline-block;
+  min-width: 16px;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
 input,
 select,
 textarea {

@@ -15,8 +15,16 @@ const API = (() => {
   };
   let akun = load(),
     sesi = null;
+  const coba = {};
+  function boleh(kunci, maks, ms) {
+    const c = coba[kunci],
+      now = Date.now();
+    if (!c || now - c.mulai > ms) coba[kunci] = { n: 1, mulai: now };
+    else c.n++;
+    return coba[kunci].n <= maks;
+  }
   const semua = () => [...DB_MHS, ...akun],
-    lain = () => semua().filter(u => u.id != sesi.id && u.show !== false),
+    lain = () => semua().filter(u => u.id != sesi.id && (u.show !== false || sesi.st[u.id])),
     low = s => String(s || '').trim().toLowerCase(),
     hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
   async function hash(pw, salt) {
@@ -52,6 +60,7 @@ const API = (() => {
       mn: u.mn,
       wk: u.wk,
       st,
+      masuk: !!sesi.masuk[u.id],
       pos,
       km: Math.max(0.1, Math.round(jarak(sesi, pos) * 10) / 10),
     };
@@ -75,6 +84,7 @@ const API = (() => {
   }
   return {
     async verifikasi(r) {
+      if (!boleh('cek:' + r.nim, 10, 9e5)) return 'Terlalu banyak percobaan, coba lagi nanti';
       return cek(r);
     },
     async daftar(r) {
@@ -104,7 +114,9 @@ const API = (() => {
         mn: [],
         wk: [],
         show: true,
-        st: {},
+        /* contoh permintaan masuk untuk layar Terima/Tolak */
+        st: { 4: 'pending', 7: 'pending' },
+        masuk: { 4: 1, 7: 1 },
         salt,
         pw: await hash(r.pw, salt),
       };
@@ -115,6 +127,7 @@ const API = (() => {
     async masuk(nim, pw) {
       const u = akun.find(x => x.nim == nim);
       if (!u || (await hash(pw || '', u.salt)) != u.pw) throw new Error('NIM atau kata sandi salah');
+      u.masuk = u.masuk || {};
       sesi = u;
       return profil();
     },
@@ -150,6 +163,7 @@ const API = (() => {
     async cariNim(q) {
       wajibSesi();
       if (!/^\d{9}$/.test(q)) return { t: 'none' };
+      if (!boleh('cari:' + sesi.id, 20, 36e5)) return { t: 'limit' };
       if (q == sesi.nim) return { t: 'self' };
       const u = lain().find(x => x.nim == q);
       return u ? { t: 'ok', id: u.id } : { t: 'none' };
@@ -157,6 +171,14 @@ const API = (() => {
     async connect(id) {
       wajibSesi();
       sesi.st[id] = 'pending';
+      simpan();
+    },
+    async jawabKoneksi(id, terima) {
+      wajibSesi();
+      if (!sesi.masuk[id]) throw new Error('Permintaan tidak ditemukan');
+      delete sesi.masuk[id];
+      if (terima) sesi.st[id] = 'ok';
+      else delete sesi.st[id];
       simpan();
     },
     /* simulasi pihak lain menyetujui; hilang saat connect sungguhan tersedia */

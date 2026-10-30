@@ -7,6 +7,15 @@ async function conn(id) {
     toast('Terhubung 🎉 Kamu bisa langsung mulai chat');
   }, 1500);
 }
+async function jawab(id, terima) {
+  try {
+    await API.jawabKoneksi(id, terima);
+    await muat();
+    toast(terima ? 'Terhubung 🎉 Kamu bisa langsung mulai chat' : 'Permintaan ditolak');
+  } catch (e) {
+    toast(e.message);
+  }
+}
 const pu = k => S.people.find(x => x.id == k.slice(1));
 const pn = k => {
   const u = pu(k);
