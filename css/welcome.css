@@ -1,0 +1,23 @@
+.wel {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  text-align: center;
+  min-height: 100%;
+  overflow: auto;
+}
+.wel .logo {
+  font-size: 34px;
+  color: var(--a);
+}
+.wel h1 {
+  font-size: 23px;
+  margin: 14px 0 6px;
+  color: var(--a);
+}
+.wel .btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+}

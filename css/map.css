@@ -1,0 +1,56 @@
+.map {
+  position: relative;
+  aspect-ratio: 1/1;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--l);
+  margin-bottom: 10px;
+}
+.map svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.mk {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: var(--b);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px #0005;
+  padding: 0;
+}
+.mk.me {
+  background: var(--y);
+  color: #111;
+  width: 36px;
+  height: 36px;
+  font-size: 11px;
+  animation: p 1.8s infinite;
+}
+.mk.ok {
+  background: #16a34a;
+}
+@keyframes p {
+  50% {
+    box-shadow: 0 0 0 12px #ffc20e44;
+  }
+}
+.mk.hit {
+  background: var(--y);
+  color: #111;
+  width: 40px;
+  height: 40px;
+  z-index: 3;
+  animation: p 1.4s infinite;
+}
+.mk.dim {
+  opacity: 0.3;
+}

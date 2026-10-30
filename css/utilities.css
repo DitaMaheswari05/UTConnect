@@ -1,0 +1,34 @@
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 70px;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 9px 16px;
+  border-radius: 20px;
+  z-index: 20;
+  font-size: 13px;
+}
+.lock {
+  background: #ffc20e22;
+  border-color: var(--y);
+}
+.bar {
+  height: 6px;
+  border-radius: 4px;
+  background: var(--l);
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--y);
+}
+.pv li {
+  margin-bottom: 6px;
+  text-align: left;
+}
+.tl {
+  text-align: left;
+}

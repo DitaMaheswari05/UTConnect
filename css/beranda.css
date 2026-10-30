@@ -1,0 +1,13 @@
+.sr {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.sr input {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.sr .btn {
+  white-space: nowrap;
+}

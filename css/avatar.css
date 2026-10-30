@@ -1,0 +1,30 @@
+.av {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: none;
+}
+.av .ph {
+  position: absolute;
+  inset: -6px;
+  filter: blur(6px);
+}
+.av.u .ph {
+  filter: none;
+}
+.av span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 1px 3px #0008;
+}
+.av.big {
+  width: 76px;
+  height: 76px;
+  font-size: 22px;
+}

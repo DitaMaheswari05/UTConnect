@@ -1,0 +1,48 @@
+#md {
+  position: fixed;
+  inset: 0;
+  background: #0008;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 9;
+}
+#md.on {
+  display: flex;
+}
+.mb {
+  background: var(--card);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90%;
+  overflow: auto;
+  border-radius: 24px 24px 0 0;
+  padding: 20px;
+}
+.mb label {
+  display: block;
+  margin: 10px 0 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+.mb label > * {
+  margin-top: 4px;
+  font-weight: 400;
+}
+.mb .krow {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.err {
+  color: #e11d48;
+  font-weight: 600;
+}
+@media (min-width: 600px) {
+  #md {
+    align-items: center;
+  }
+  .mb {
+    border-radius: 24px;
+  }
+}

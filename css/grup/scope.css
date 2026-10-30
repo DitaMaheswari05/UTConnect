@@ -1,0 +1,56 @@
+.kb,
+#md {
+  --card: var(--c);
+  --ink: var(--t);
+  --mut: var(--m);
+  --line: var(--l);
+  --tile: rgba(120, 150, 190, 0.16);
+  --pri: var(--b);
+  --pt: var(--a);
+  --chip: var(--b);
+  --amb: var(--y);
+  --grn: #10b981;
+  --red: #f43f5e;
+}
+.kb {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.kb a,
+#md a {
+  color: var(--pt);
+}
+:where(.kb, #md) :is(button, input, select, textarea) {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+:where(.kb, #md) :is(input, select, textarea) {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  margin: 0;
+}
+.kb .ck input {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+}
+.kb h1 {
+  margin: 0;
+  font-size: 19px;
+  color: var(--a);
+}
+.kb h2,
+#md h3 {
+  margin: 0;
+}
+.kb h2 {
+  font-size: 18px;
+}
+.kb h3,
+#md h3 {
+  font-size: 16px;
+}

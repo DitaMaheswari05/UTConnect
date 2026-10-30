@@ -1,0 +1,93 @@
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--b);
+  color: #fff;
+}
+.logo {
+  font-weight: 800;
+  font-size: 19px;
+}
+.logo b {
+  color: var(--y);
+}
+header button {
+  background: #ffffff22;
+  border: 0;
+  color: #fff;
+  border-radius: 20px;
+  padding: 6px 11px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+main {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 16px 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+nav {
+  order: 3;
+  display: flex;
+  background: var(--c);
+  border-top: 1px solid var(--l);
+}
+nav button {
+  flex: 1;
+  border: 0;
+  background: none;
+  padding: 8px 0;
+  color: var(--m);
+  font-size: 11px;
+  cursor: pointer;
+}
+nav button i {
+  display: block;
+  font-style: normal;
+  font-size: 20px;
+}
+nav button.on {
+  color: var(--a);
+  font-weight: 700;
+}
+nav button.on i {
+  background: var(--y);
+  border-radius: 12px;
+  margin: 0 auto;
+  width: 44px;
+}
+@media (min-width: 900px) {
+  .shell {
+    flex-direction: row;
+  }
+  nav {
+    order: 0;
+    flex-direction: column;
+    width: 200px;
+    border: 0;
+    border-right: 1px solid var(--l);
+    padding-top: 14px;
+  }
+  nav button {
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  nav button i {
+    display: inline;
+    margin-right: 8px;
+  }
+  nav button.on i {
+    width: auto;
+    background: none;
+  }
+  .g2 {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 16px;
+  }
+}
