@@ -15,7 +15,8 @@ langkah build, dengan `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` diisi di env
 | `migrations/..._fungsi.sql` | Fungsi backend: verifikasi NIM, jarak, grup, polling |
 | `migrations/..._keamanan.sql` | Hak akses, RLS, realtime, storage |
 | `migrations/..._konten.sql` | Urutan opsi polling, penulis Info Hub dari profil |
-| `migrations/..._email_bebas.sql` | Email daftar bebas, verifikasi lewat NIM, nama, fakultas, prodi |
+| `migrations/..._email_bebas.sql` | Email daftar bebas |
+| `migrations/..._daftar_bebas.sql` | Pendaftaran bebas, NIM tidak dicocokkan dengan registry |
 | `seed.sql` | Data master: fakultas, prodi, mata kuliah |
 | `nim_registry.contoh.csv` | Format data mahasiswa dari UT |
 
@@ -33,13 +34,15 @@ langkah build, dengan `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` diisi di env
 
    Kalau `supabase init` menanyakan folder yang sudah ada, pertahankan isi `migrations/`.
 
-3. Di dashboard, buka **Authentication > Sign In / Providers > Email** dan pastikan **Confirm email** aktif.
-   Email pendaftaran bebas, jadi ini hanya membuktikan kepemilikan email, bukan kepemilikan NIM. Siapa pun
-   yang tahu NIM, nama, fakultas, dan prodi seseorang bisa mendaftar atas namanya.
+3. Pendaftaran bebas: NIM cukup 9 digit dan belum dipakai, tidak dicocokkan dengan `nim_registry`. Kalau
+   **Confirm email** di **Authentication > Sign In / Providers > Email** dimatikan, akun langsung bisa masuk.
 4. Di **Authentication > URL Configuration**, isi **Site URL** dengan alamat Vercel.
 5. Isi SMTP sendiri di **Authentication > SMTP**. SMTP bawaan Supabase dibatasi dan tidak untuk production.
 
 ## Mengisi data mahasiswa
+
+`private.nim_registry` tidak dipakai saat ini karena pendaftaran bebas. Bagian ini berlaku kalau verifikasi
+diaktifkan lagi.
 
 Data asli jangan masuk repo. Taruh di `supabase/data/`, folder itu sudah ada di `.gitignore`.
 

@@ -102,10 +102,10 @@ const API = (() => {
           emailRedirectTo: location.origin + location.pathname,
         },
       });
-      /* Trigger buat_profil menolak akun di luar registry, Auth melaporkannya sebagai error umum. */
+      /* Penolakan trigger buat_profil dilaporkan Auth sebagai error umum. */
       if (error)
         throw new Error(
-          /database/i.test(error.message) ? 'Data tidak cocok dengan data mahasiswa UT' : error.message,
+          /database/i.test(error.message) ? 'NIM sudah terdaftar atau data tidak valid' : error.message,
         );
       tundaPin(r.pin);
       return data.session ? masukSesi(data.user.id) : null;
