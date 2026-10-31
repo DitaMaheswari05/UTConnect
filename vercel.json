@@ -1,0 +1,7 @@
+{
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "node scripts/buat-config.mjs && rm -rf dist && mkdir dist && cp -r html css js dist/",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/", "destination": "/html/index.html" }]
+}

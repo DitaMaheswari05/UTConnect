@@ -4,8 +4,7 @@ const H = s =>
     /[&<>"]/g,
     c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
   );
-const uid = () => Math.random().toString(36).slice(2, 9),
-  ok = u => /^https?:\/\//i.test(u || ''),
+const ok = u => /^https?:\/\//i.test(u || ''),
   tm = t => (t || '').replace(':', '.');
 const fD = d =>
   d

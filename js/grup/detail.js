@@ -29,11 +29,18 @@ function detail(g) {
 }
 function inner() {
   me = (S.me || {}).id;
-  if (!KS) KS = seed();
+  if (!KS) {
+    KS = { nf: [], groups: [] };
+    segar().catch(e => toast(e.message));
+  }
   if (KV.v == 'd' && !KG(KV.id)) KV.v = 'list';
   return KV.v == 'list' ? list() : detail(KG(KV.id));
 }
 function render() {
   const e = document.getElementById('kb');
-  if (e) e.innerHTML = inner();
+  if (!e) return;
+  /* Render ulang dari realtime tidak boleh menghapus ketikan di kolom chat. */
+  const ci = ($('#kci') || {}).value;
+  e.innerHTML = inner();
+  if (ci && $('#kci')) $('#kci').value = ci;
 }

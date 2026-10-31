@@ -3,3 +3,6 @@
 !.env.example
 supabase/.temp/
 supabase/data/
+js/core/config.js
+dist/
+.vercel/

@@ -1,192 +1,435 @@
-/* Server tiruan. Semua akses data mahasiswa lewat API; ganti isi file ini saat backend siap. */
+/* Semua akses data mahasiswa lewat API. Aturan pemakaian ada di supabase/README.md. */
 const API = (() => {
-  const KEY_AKUN = 'ut_akun_v1';
-  const load = () => {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  /* Pin ditahan di browser sampai email dikonfirmasi, karena set_lokasi() butuh sesi login. */
+  const KEY_PIN = 'ut_pin_tunda';
+  const tundaPin = pin => {
     try {
-      return JSON.parse(localStorage.getItem(KEY_AKUN)) || [];
-    } catch (e) {
-      return [];
-    }
-  };
-  const simpan = () => {
-    try {
-      localStorage.setItem(KEY_AKUN, JSON.stringify(akun));
+      localStorage.setItem(KEY_PIN, JSON.stringify(pin));
     } catch (e) {}
   };
-  let akun = load(),
-    sesi = null;
-  const coba = {};
-  function boleh(kunci, maks, ms) {
-    const c = coba[kunci],
-      now = Date.now();
-    if (!c || now - c.mulai > ms) coba[kunci] = { n: 1, mulai: now };
-    else c.n++;
-    return coba[kunci].n <= maks;
-  }
-  const semua = () => [...DB_MHS, ...akun],
-    lain = () => semua().filter(u => u.id != sesi.id && (u.show !== false || sesi.st[u.id])),
-    low = s => String(s || '').trim().toLowerCase(),
-    hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
-  async function hash(pw, salt) {
-    return hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + pw)));
-  }
-  function wajibSesi() {
-    if (!sesi) throw new Error('Silakan masuk dulu');
-  }
-  function jarak(a, b) {
-    const r = x => (x * Math.PI) / 180,
-      dl = r(b.lat - a.lat),
-      dn = r(b.lng - a.lng),
-      q = Math.sin(dl / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dn / 2) ** 2;
-    return 12742 * Math.asin(Math.sqrt(q));
-  }
-  const acak = u => ({
-    lat: u.lat + (((u.id * 37) % 11) - 5) * 0.0005,
-    lng: u.lng + (((u.id * 53) % 11) - 5) * 0.0005,
-  });
-  const dto = u => {
-    const st = sesi.st[u.id],
-      pos = acak(u);
-    return {
-      id: u.id,
-      i: u.i,
-      n: st == 'ok' ? u.n : u.i.split('').join('.') + '.',
-      nim: u.nim.slice(0, 3) + '••••••',
-      p: u.p,
-      f: u.f,
-      s: u.s,
-      mk: u.mk,
-      tp: u.tp,
-      mn: u.mn,
-      wk: u.wk,
-      st,
-      masuk: !!sesi.masuk[u.id],
-      pos,
-      km: Math.max(0.1, Math.round(jarak(sesi, pos) * 10) / 10),
-    };
+  const ambilPin = () => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY_PIN));
+    } catch (e) {
+      return null;
+    }
   };
-  const profil = () => ({
-    id: sesi.id,
-    nm: sesi.n,
-    nim: sesi.nim,
-    fk: sesi.f,
-    pr: sesi.p,
-    sm: sesi.s,
-    pin: { lat: sesi.lat, lng: sesi.lng },
-    show: sesi.show,
+  const buangPin = () => {
+    try {
+      localStorage.removeItem(KEY_PIN);
+    } catch (e) {}
+  };
+  const hasil = ({ data, error }) => {
+    if (error) throw new Error(error.message);
+    return data;
+  };
+  let uid = null;
+  async function wajibSesi() {
+    if (!uid) throw new Error('Silakan masuk dulu');
+  }
+  const dto = u => ({
+    id: u.id,
+    i: u.inisial,
+    n: u.nama,
+    nim: u.nim,
+    p: u.prodi,
+    f: u.fakultas,
+    s: u.semester,
+    mk: u.mk,
+    tp: u.topik,
+    mn: u.minat,
+    wk: u.waktu,
+    st: u.status || undefined,
+    masuk: u.permintaan_masuk,
+    pos: { lat: u.pos_lat, lng: u.pos_lng },
+    km: +u.km,
   });
-  function cek(r) {
-    if (semua().some(u => u.nim == r.nim)) return 'NIM sudah terdaftar, silakan masuk';
-    const d = DB_NIM[r.nim];
-    if (!d || low(d.nm) != low(r.nm) || d.fk != r.fk || d.pr != r.pr)
-      return 'Data tidak cocok dengan data mahasiswa UT';
-    return '';
+  async function profil() {
+    const p = hasil(
+      await sb
+        .from('profiles')
+        .select('id,nim,nama,fakultas,prodi,semester,tampil_peta')
+        .eq('id', uid)
+        .single(),
+    );
+    const [pin] = hasil(await sb.rpc('lokasi_saya'));
+    return {
+      id: p.id,
+      nm: p.nama,
+      nim: p.nim,
+      fk: p.fakultas,
+      pr: p.prodi,
+      sm: p.semester,
+      pin: pin ? { lat: pin.lat, lng: pin.lng } : null,
+      show: p.tampil_peta,
+    };
+  }
+  async function masukSesi(id) {
+    uid = id;
+    const pin = ambilPin();
+    if (pin) {
+      hasil(await sb.rpc('set_lokasi', { p_lat: pin.lat, p_lng: pin.lng }));
+      buangPin();
+    }
+    return profil();
   }
   return {
-    async verifikasi(r) {
-      if (!boleh('cek:' + r.nim, 10, 9e5)) return 'Terlalu banyak percobaan, coba lagi nanti';
-      return cek(r);
+    /* Memulihkan sesi saat halaman dibuka, termasuk dari link konfirmasi email. */
+    async sesi() {
+      const { session } = hasil(await sb.auth.getSession());
+      return session ? masukSesi(session.user.id) : null;
     },
+    async verifikasi(r) {
+      return hasil(
+        await sb.rpc('cek_nim', {
+          p_nim: r.nim,
+          p_nama: r.nm,
+          p_fakultas: r.fk,
+          p_prodi: r.pr,
+        }),
+      );
+    },
+    /* Mengembalikan null: akun dibuat tapi email harus dikonfirmasi dulu sebelum bisa masuk. */
     async daftar(r) {
-      const e = cek(r);
-      if (e) throw new Error(e);
       if (!r.pin) throw new Error('Taruh pin lokasi dulu');
       if ((r.pw || '').length < 8) throw new Error('Kata sandi minimal 8 karakter');
-      const salt = hex(crypto.getRandomValues(new Uint8Array(16))),
-        d = DB_NIM[r.nim];
-      sesi = {
-        id: Math.max(...semua().map(u => u.id)) + 1,
-        nim: r.nim,
-        n: d.nm,
-        i: d.nm
-          .split(' ')
-          .map(x => x[0])
-          .join('')
-          .slice(0, 2)
-          .toUpperCase(),
-        p: d.pr,
-        f: d.fk,
-        s: +r.sm,
-        lat: r.pin.lat,
-        lng: r.pin.lng,
-        mk: [],
-        tp: [],
-        mn: [],
-        wk: [],
-        show: true,
-        /* contoh permintaan masuk untuk layar Terima/Tolak */
-        st: { 4: 'pending', 7: 'pending' },
-        masuk: { 4: 1, 7: 1 },
-        salt,
-        pw: await hash(r.pw, salt),
-      };
-      akun.push(sesi);
-      simpan();
-      return profil();
+      const { data, error } = await sb.auth.signUp({
+        email: r.em.trim().toLowerCase(),
+        password: r.pw,
+        options: {
+          data: { nim: r.nim, nama: r.nm, fakultas: r.fk, prodi: r.pr, semester: +r.sm },
+          emailRedirectTo: location.origin + location.pathname,
+        },
+      });
+      /* Trigger buat_profil menolak akun di luar registry, Auth melaporkannya sebagai error umum. */
+      if (error)
+        throw new Error(
+          /database/i.test(error.message) ? 'Data tidak cocok dengan data mahasiswa UT' : error.message,
+        );
+      tundaPin(r.pin);
+      return data.session ? masukSesi(data.user.id) : null;
     },
-    async masuk(nim, pw) {
-      const u = akun.find(x => x.nim == nim);
-      if (!u || (await hash(pw || '', u.salt)) != u.pw) throw new Error('NIM atau kata sandi salah');
-      u.masuk = u.masuk || {};
-      sesi = u;
-      return profil();
+    async masuk(email, pw) {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: String(email || '').trim().toLowerCase(),
+        password: pw || '',
+      });
+      if (error)
+        throw new Error(
+          error.code == 'email_not_confirmed'
+            ? 'Konfirmasi email dulu, cek kotak masukmu'
+            : 'Email atau kata sandi salah',
+        );
+      return masukSesi(data.user.id);
     },
     async keluar() {
-      sesi = null;
+      uid = null;
+      await sb.removeAllChannels();
+      await sb.auth.signOut();
     },
     async setPin(pin) {
-      wajibSesi();
-      sesi.lat = pin.lat;
-      sesi.lng = pin.lng;
-      simpan();
+      await wajibSesi();
+      hasil(await sb.rpc('set_lokasi', { p_lat: pin.lat, p_lng: pin.lng }));
     },
     async setShow(show) {
-      wajibSesi();
-      sesi.show = show;
-      simpan();
+      await wajibSesi();
+      hasil(await sb.from('profiles').update({ tampil_peta: show }).eq('id', uid));
     },
     async orang() {
-      wajibSesi();
-      return lain()
-        .map(dto)
-        .sort((a, b) => a.km - b.km);
+      await wajibSesi();
+      return hasil(await sb.rpc('orang_sekitar')).map(dto);
     },
     async direktori() {
-      wajibSesi();
-      return semua()
-        .filter(u => u.id != sesi.id)
-        .map(u => {
-          const w = u.n.split(' ');
-          return { id: u.id, n: w[0] + (w[1] ? ' ' + w[1][0] + '.' : ''), p: u.p };
-        });
+      await wajibSesi();
+      return hasil(await sb.rpc('direktori')).map(u => ({ id: u.id, n: u.nama, p: u.prodi }));
     },
     async cariNim(q) {
-      wajibSesi();
-      if (!/^\d{9}$/.test(q)) return { t: 'none' };
-      if (!boleh('cari:' + sesi.id, 20, 36e5)) return { t: 'limit' };
-      if (q == sesi.nim) return { t: 'self' };
-      const u = lain().find(x => x.nim == q);
-      return u ? { t: 'ok', id: u.id } : { t: 'none' };
+      await wajibSesi();
+      const [r] = hasil(await sb.rpc('cari_nim', { q }));
+      return r.id ? { t: r.hasil, id: r.id } : { t: r.hasil };
     },
     async connect(id) {
-      wajibSesi();
-      sesi.st[id] = 'pending';
-      simpan();
+      await wajibSesi();
+      hasil(await sb.from('koneksi').insert({ pemohon: uid, penerima: id }));
     },
     async jawabKoneksi(id, terima) {
-      wajibSesi();
-      if (!sesi.masuk[id]) throw new Error('Permintaan tidak ditemukan');
-      delete sesi.masuk[id];
-      if (terima) sesi.st[id] = 'ok';
-      else delete sesi.st[id];
-      simpan();
+      await wajibSesi();
+      const q = sb.from('koneksi');
+      const baris = hasil(
+        await (terima ? q.update({ status: 'ok' }) : q.delete())
+          .eq('pemohon', id)
+          .eq('penerima', uid)
+          .eq('status', 'pending')
+          .select('id'),
+      );
+      if (!baris.length) throw new Error('Permintaan tidak ditemukan');
     },
-    /* simulasi pihak lain menyetujui; hilang saat connect sungguhan tersedia */
-    async simulasiTerima(id) {
-      if (!sesi) return false;
-      sesi.st[id] = 'ok';
-      simpan();
-      return true;
+    /* peta: { tabel: cb }. RLS memastikan hanya baris milik pengguna yang sampai. */
+    pantau(peta) {
+      const ch = sb.channel('utconnect');
+      Object.entries(peta).forEach(([table, cb]) =>
+        ch.on('postgres_changes', { event: '*', schema: 'public', table }, cb),
+      );
+      ch.subscribe();
+    },
+    /* ---------- chat pribadi ---------- */
+    async pesan(id) {
+      await wajibSesi();
+      const r = hasil(
+        await sb
+          .from('pesan_pribadi')
+          .select('dari,isi')
+          .or(`and(dari.eq.${uid},ke.eq.${id}),and(dari.eq.${id},ke.eq.${uid})`)
+          .order('dibuat'),
+      );
+      return r.map(m => ({ me: m.dari == uid, t: m.isi }));
+    },
+    async kirimPesan(id, isi) {
+      await wajibSesi();
+      hasil(await sb.from('pesan_pribadi').insert({ ke: id, isi }));
+    },
+    /* ---------- forum & info hub ---------- */
+    async forum() {
+      await wajibSesi();
+      const r = hasil(
+        await sb
+          .from('forum_post')
+          .select('id,penulis,mk,tipe,isi,dibuat,forum_penawaran(user_id)')
+          .order('dibuat', { ascending: false }),
+      );
+      return r.map(p => ({
+        id: p.id,
+        by: p.penulis,
+        mk: p.mk,
+        t: p.tipe,
+        x: p.isi,
+        ts: p.dibuat,
+        h: p.forum_penawaran.length,
+        off: p.forum_penawaran.some(o => o.user_id == uid),
+      }));
+    },
+    async postForum(mk, tipe, isi) {
+      await wajibSesi();
+      hasil(await sb.from('forum_post').insert({ mk, tipe, isi }));
+    },
+    async tawarkan(id, jadi) {
+      await wajibSesi();
+      const q = sb.from('forum_penawaran');
+      hasil(await (jadi ? q.insert({ post_id: id }) : q.delete().eq('post_id', id).eq('user_id', uid)));
+    },
+    /* Terbuka untuk guest. */
+    async info() {
+      const r = hasil(
+        await sb
+          .from('info_post')
+          .select('lingkup,kategori,judul,isi,nama_penulis,peran,dibuat')
+          .order('dibuat', { ascending: false }),
+      );
+      return r.map(i => ({
+        s: i.lingkup,
+        c: i.kategori,
+        t: i.judul,
+        x: i.isi,
+        by: i.nama_penulis,
+        r: i.peran,
+        ts: i.dibuat,
+      }));
+    },
+    async postInfo(lingkup, kategori, judul, isi) {
+      await wajibSesi();
+      /* nama_penulis diisi ulang oleh trigger dari profil */
+      hasil(
+        await sb
+          .from('info_post')
+          .insert({ lingkup, kategori, judul, isi, nama_penulis: '-', peran: 'Mahasiswa' }),
+      );
+    },
+    /* ---------- kelompok belajar ---------- */
+    async grupSemua() {
+      await wajibSesi();
+      const [gs, ang, min, und, nf] = await Promise.all([
+        sb.from('grup').select('*').order('dibuat'),
+        sb.from('grup_anggota').select('grup_id,user_id,peran').order('gabung_pada'),
+        sb.from('grup_permintaan').select('grup_id,user_id'),
+        sb.from('grup_undangan').select('grup_id,user_id'),
+        sb.from('notifikasi').select('*').order('dibuat', { ascending: false }).limit(30),
+      ]);
+      const milik = (r, g) => hasil(r).filter(x => x.grup_id == g);
+      return {
+        nf: hasil(nf).map(n => ({ id: n.id, t: n.isi, ts: n.dibuat, r: n.dibaca })),
+        groups: hasil(gs).map(g => ({
+          id: g.id,
+          name: g.nama,
+          course: g.kode_mk,
+          type: g.tipe,
+          cap: g.kapasitas,
+          day: g.hari,
+          start: g.mulai.slice(0, 5),
+          end: g.selesai.slice(0, 5),
+          platform: g.platform,
+          loc: g.lokasi,
+          addr: g.alamat,
+          join: g.gabung,
+          desc: g.deskripsi,
+          goal: g.tujuan,
+          rules: g.aturan,
+          link: '',
+          members: milik(ang, g.id).map(a => ({ id: a.user_id, r: a.peran })),
+          reqs: milik(min, g.id).map(x => x.user_id),
+          invited: milik(und, g.id).map(x => x.user_id),
+          msgs: [],
+          meets: [],
+          targets: [],
+          tasks: [],
+          polls: [],
+          notes: [],
+          mats: [],
+        })),
+      };
+    },
+    /* Isi grup hanya terbaca oleh anggota. */
+    async grupIsi(g) {
+      await wajibSesi();
+      const baca = (t, k = '*') => sb.from(t).select(k).eq('grup_id', g);
+      const [link, msgs, meets, targets, tasks, polls, notes, mats] = await Promise.all([
+        baca('grup_link', 'link').maybeSingle(),
+        baca('grup_pesan').order('dibuat'),
+        baca('grup_pertemuan').order('tanggal'),
+        baca('grup_target'),
+        baca('grup_tugas').order('tenggat'),
+        baca('grup_polling', '*,polling_opsi(id,teks,urutan,polling_suara(user_id))').order('dibuat', {
+          ascending: false,
+        }),
+        baca('grup_catatan').order('dibuat', { ascending: false }),
+        baca('grup_materi').order('dibuat', { ascending: false }),
+      ]);
+      return {
+        link: (hasil(link) || {}).link || '',
+        msgs: hasil(msgs).map(m => ({
+          id: m.id,
+          by: m.pengirim,
+          t: m.isi,
+          ts: m.dibuat,
+          rp: m.balas_ke || '',
+          pin: m.pin,
+        })),
+        meets: hasil(meets).map(m => ({
+          id: m.id,
+          title: m.judul,
+          date: m.tanggal,
+          start: m.mulai.slice(0, 5),
+          end: m.selesai.slice(0, 5),
+          mat: m.materi,
+          link: m.link,
+          note: m.catatan,
+        })),
+        targets: hasil(targets).map(t => ({ id: t.id, t: t.judul, done: t.selesai })),
+        tasks: hasil(tasks).map(t => ({
+          id: t.id,
+          t: t.judul,
+          d: t.deskripsi,
+          dl: t.tenggat,
+          pri: t.prioritas,
+          who: t.penanggung_jawab,
+          st: t.status,
+        })),
+        polls: hasil(polls).map(p => ({
+          id: p.id,
+          q: p.pertanyaan,
+          closed: p.ditutup,
+          o: p.polling_opsi
+            .sort((a, b) => a.urutan - b.urutan)
+            .map(o => ({ id: o.id, t: o.teks, v: o.polling_suara.map(s => s.user_id) })),
+        })),
+        notes: hasil(notes).map(n => ({
+          id: n.id,
+          title: n.judul,
+          mat: n.materi,
+          disc: n.pembahasan,
+          concl: n.kesimpulan,
+          nt: n.tugas_berikut,
+          nm: n.materi_berikut,
+        })),
+        mats: hasil(mats).map(m => ({
+          id: m.id,
+          n: m.nama,
+          ty: m.tipe,
+          url: m.url,
+          tx: m.isi,
+          sz: m.ukuran,
+          by: m.oleh,
+          ts: m.dibuat,
+          path: m.path_file,
+        })),
+      };
+    },
+    async buatGrup(baris, link, target) {
+      await wajibSesi();
+      const { id } = hasil(await sb.from('grup').insert(baris).select('id').single());
+      if (link) hasil(await sb.from('grup_link').insert({ grup_id: id, link }));
+      if (target) hasil(await sb.from('grup_target').insert({ grup_id: id, judul: target }));
+      return id;
+    },
+    async ubahGrup(id, baris, link) {
+      await API.ubah('grup', id, baris);
+      const q = sb.from('grup_link');
+      hasil(
+        await (link ? q.upsert({ grup_id: id, link }) : q.delete().eq('grup_id', id)),
+      );
+    },
+    async buatPolling(grup_id, pertanyaan, opsi) {
+      await wajibSesi();
+      const p = hasil(await sb.from('grup_polling').insert({ grup_id, pertanyaan }).select('id').single());
+      hasil(
+        await sb
+          .from('polling_opsi')
+          .insert(opsi.map((teks, urutan) => ({ polling_id: p.id, teks, urutan }))),
+      );
+    },
+    async setPeran(g, u, peran) {
+      await wajibSesi();
+      hasil(await sb.from('grup_anggota').update({ peran }).eq('grup_id', g).eq('user_id', u).select('peran'));
+    },
+    async keluarkan(g, u) {
+      await wajibSesi();
+      hasil(await sb.from('grup_anggota').delete().eq('grup_id', g).eq('user_id', u));
+    },
+    async notifDibaca() {
+      await wajibSesi();
+      hasil(await sb.from('notifikasi').update({ dibaca: true }).eq('user_id', uid).eq('dibaca', false));
+    },
+    async unggah(g, file) {
+      await wajibSesi();
+      const ext = (file.name.split('.').pop() || 'bin').replace(/\W/g, '');
+      const path = `${g}/${crypto.randomUUID()}.${ext}`;
+      hasil(await sb.storage.from('materi').upload(path, file, { contentType: file.type }));
+      return path;
+    },
+    async materiUrl(path) {
+      return hasil(await sb.storage.from('materi').createSignedUrl(path, 3600)).signedUrl;
+    },
+    async hapusFile(path) {
+      hasil(await sb.storage.from('materi').remove([path]));
+    },
+    /* Penulisan umum. RLS menolak update/delete tanpa error, jadi hasil kosong dianggap ditolak. */
+    async tambah(tabel, baris) {
+      await wajibSesi();
+      hasil(await sb.from(tabel).insert(baris));
+    },
+    async ubah(tabel, id, kolom) {
+      await wajibSesi();
+      const r = hasil(await sb.from(tabel).update(kolom).eq('id', id).select('id'));
+      if (!r.length) throw new Error('Kamu tidak punya izin untuk ini');
+    },
+    async hapus(tabel, id) {
+      await wajibSesi();
+      const r = hasil(await sb.from(tabel).delete().eq('id', id).select('id'));
+      if (!r.length) throw new Error('Kamu tidak punya izin untuk ini');
+    },
+    async fungsi(nama, args) {
+      await wajibSesi();
+      return hasil(await sb.rpc(nama, args));
     },
   };
 })();

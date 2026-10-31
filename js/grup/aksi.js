@@ -6,32 +6,31 @@ function leave(g) {
     g.members.length == 1
       ? 'Kamu anggota terakhir. Keluar akan menghapus kelompok ini.'
       : 'Keluar dari grup “' + H(g.name) + '”?',
-    () => {
-      if (g.members.length == 1) KS.groups = KS.groups.filter(x => x != g);
-      else g.members = g.members.filter(x => x.id != me);
+    async () => {
+      await API.fungsi('keluar_grup', { g: g.id });
       KV.v = 'list';
-      save();
-      render();
+      await segar();
     },
     'Keluar',
   );
 }
-function addMem(g, id) {
-  if (g.members.length >= g.cap) {
-    toast('Kapasitas penuh');
-    return false;
-  }
-  g.members.push({ id, r: 'member' });
-  nt(g, 'Anggota baru: ' + un(id));
-  return true;
-}
+/* Hapus satu baris setelah dikonfirmasi. */
+const hapusItem = (tabel, id, tanya) =>
+  conf(
+    tanya,
+    async () => {
+      await API.hapus(tabel, id);
+      await segar();
+    },
+    'Hapus',
+  );
 const ACT = {
   close: kClose,
   cok() {
     kClose();
     const f = CB;
     CB = null;
-    f && f();
+    return f && f();
   },
   back() {
     KV.v = 'list';
@@ -39,12 +38,12 @@ const ACT = {
     render();
     sc0();
   },
-  open(g) {
+  async open(g) {
     if (g.join == 'private' && !mem(g)) return toast('Grup privat: hanya lewat undangan');
     KV.v = 'd';
     KV.id = g.id;
     KV.tab = 'chat';
-    render();
+    await segar();
     sc0();
   },
   ty(g, d) {
@@ -56,42 +55,36 @@ const ACT = {
     KV.reply = null;
     render();
   },
-  join(g) {
-    if (addMem(g, me)) {
-      toast('Berhasil bergabung');
-      save();
-      render();
-    }
+  async join(g) {
+    await API.fungsi('gabung_grup', { g: g.id });
+    nt(g, 'Anggota baru: ' + un(me));
+    toast('Berhasil bergabung');
+    await segar();
   },
-  req(g) {
-    g.reqs.push(me);
+  async req(g) {
+    await API.fungsi('minta_gabung', { g: g.id });
     nt(g, 'Permintaan bergabung dari ' + un(me));
-    save();
-    render();
     toast('Permintaan terkirim');
+    await segar();
   },
-  accinv(g) {
-    g.invited = g.invited.filter(n => n != me);
-    if (addMem(g, me)) {
-      save();
-      render();
-    }
+  async accinv(g) {
+    await API.fungsi('terima_undangan', { g: g.id });
+    nt(g, 'Anggota baru: ' + un(me));
+    await segar();
   },
   leave,
-  bell() {
-    KS.nf.forEach(n => (n.r = 1));
-    save();
+  async bell() {
+    await API.notifDibaca();
     modal(
       '<h3>Notifikasi</h3>' +
         (KS.nf.length
           ? KS.nf
-              .slice(0, 30)
               .map(n => `<div class=it>${H(n.t)}<br><small>${fT(n.ts)}</small></div>`)
               .join('')
           : em('Belum ada notifikasi.', 'Aktivitas kelompok akan muncul di sini.')) +
         '<div class=krow><button class="kbtn ghost" data-a=close>Tutup</button></div>',
     );
-    render();
+    await segar();
   },
   plus() {
     form(
@@ -106,15 +99,11 @@ const ACT = {
         platform: PL[0],
         join: JM[0],
       },
-      v => {
+      async v => {
         const e = gcheck(v, 1);
         if (e) return e;
-        const g = mk({ id: uid(), members: [{ id: me, r: 'admin' }] });
-        apply(g, v);
-        if (v.t1) g.targets.push({ id: uid(), t: v.t1, done: 0 });
-        KS.groups.push(g);
+        KV.id = await API.buatGrup(gBaris(v), gLink(v), v.t1);
         KV.v = 'd';
-        KV.id = g.id;
         KV.tab = 'agenda';
       },
     );
@@ -135,10 +124,10 @@ const ACT = {
         join: JM[JK.indexOf(g.join)],
         cap: g.cap,
       },
-      v => {
+      async v => {
         const e = gcheck(v, g.members.length);
         if (e) return e;
-        apply(g, v);
+        await API.ubahGrup(g.id, gBaris(v), gLink(v));
       },
     );
   },
@@ -146,24 +135,29 @@ const ACT = {
     kClose();
     conf(
       'Hapus kelompok ini beserta seluruh isinya?',
-      () => {
-        KS.groups = KS.groups.filter(x => x != g);
+      async () => {
+        await API.hapus('grup', g.id);
         KV.v = 'list';
-        save();
-        render();
+        await segar();
       },
       'Hapus',
     );
   },
-  send(g) {
+  async send(g) {
     const i = $('#kci'),
       t = i.value.trim();
     if (!t) return;
-    g.msgs.push({ id: uid(), by: me, t, ts: Date.now(), rp: KV.reply || '', pin: 0 });
+    const balas = KV.reply || null;
+    i.value = '';
+    try {
+      await API.tambah('grup_pesan', { grup_id: g.id, isi: t, balas_ke: balas });
+    } catch (e) {
+      i.value = t;
+      throw e;
+    }
     KV.reply = null;
     nt(g, 'Pesan baru dari ' + un(me));
-    save();
-    render();
+    await segar();
     sc0(1);
   },
   reply(g, d) {
@@ -172,22 +166,13 @@ const ACT = {
     const c = $('#kci');
     c && c.focus();
   },
-  pin(g, d) {
+  async pin(g, d) {
     const m = g.msgs.find(x => x.id == d.i);
-    m.pin = m.pin ? 0 : 1;
-    save();
-    render();
+    await API.ubah('grup_pesan', m.id, { pin: !m.pin });
+    await segar();
   },
   delmsg(g, d) {
-    conf(
-      'Hapus pesan ini?',
-      () => {
-        g.msgs = g.msgs.filter(x => x.id != d.i);
-        save();
-        render();
-      },
-      'Hapus',
-    );
+    hapusItem('grup_pesan', d.i, 'Hapus pesan ini?');
   },
   addmeet(g) {
     form(
@@ -202,34 +187,34 @@ const ACT = {
         { k: 'note', l: 'Catatan', t: 'textarea' },
       ],
       { title: 'Pertemuan #' + (g.meets.length + 1), start: g.start, end: g.end },
-      v => {
+      async v => {
         if (v.end <= v.start) return 'Jam selesai harus setelah jam mulai';
         if (v.link && !ok(v.link)) return 'Link harus diawali http(s)://';
-        g.meets.push({ id: uid(), ...v });
+        await API.tambah('grup_pertemuan', {
+          grup_id: g.id,
+          judul: v.title,
+          tanggal: v.date,
+          mulai: v.start,
+          selesai: v.end,
+          materi: v.mat || '',
+          link: v.link || '',
+          catatan: v.note || '',
+        });
         nt(g, 'Jadwal belajar baru: ' + v.title);
       },
     );
   },
   delmeet(g, d) {
-    conf(
-      'Hapus jadwal ini?',
-      () => {
-        g.meets = g.meets.filter(x => x.id != d.i);
-        save();
-        render();
-      },
-      'Hapus',
-    );
+    hapusItem('grup_pertemuan', d.i, 'Hapus jadwal ini?');
   },
   addtg(g) {
-    form('Tambah Target Belajar', [{ k: 't', l: 'Target', req: 1 }], {}, v => {
-      g.targets.push({ id: uid(), t: v.t, done: 0 });
+    form('Tambah Target Belajar', [{ k: 't', l: 'Target', req: 1 }], {}, async v => {
+      await API.tambah('grup_target', { grup_id: g.id, judul: v.t });
     });
   },
-  deltg(g, d) {
-    g.targets = g.targets.filter(x => x.id != d.i);
-    save();
-    render();
+  async deltg(g, d) {
+    await API.hapus('grup_target', d.i);
+    await segar();
   },
   addtask(g) {
     form(
@@ -242,22 +227,21 @@ const ACT = {
         { k: 'who', l: 'Penanggung jawab', t: 'select', o: g.members.map(x => [x.id, un(x.id)]) },
       ],
       { pri: 'Sedang', who: me },
-      v => {
-        g.tasks.push({ id: uid(), ...v, who: +v.who, st: 'Belum dimulai' });
+      async v => {
+        await API.tambah('grup_tugas', {
+          grup_id: g.id,
+          judul: v.t,
+          deskripsi: v.d || '',
+          tenggat: v.dl,
+          prioritas: v.pri,
+          penanggung_jawab: v.who,
+        });
         nt(g, 'Tugas baru: ' + v.t + ' (deadline ' + v.dl + ')');
       },
     );
   },
   deltask(g, d) {
-    conf(
-      'Hapus tugas ini?',
-      () => {
-        g.tasks = g.tasks.filter(x => x.id != d.i);
-        save();
-        render();
-      },
-      'Hapus',
-    );
+    hapusItem('grup_tugas', d.i, 'Hapus tugas ini?');
   },
   addpoll(g) {
     form(
@@ -267,29 +251,24 @@ const ACT = {
         { k: 'o', l: 'Pilihan (satu per baris, min. 2)', t: 'textarea', req: 1 },
       ],
       {},
-      v => {
+      async v => {
         const o = v.o
           .split('\n')
           .map(s => s.trim())
           .filter(Boolean);
         if (o.length < 2) return 'Minimal 2 pilihan';
-        g.polls.unshift({ id: uid(), q: v.q, closed: 0, o: o.map(t => ({ id: uid(), t, v: [] })) });
+        await API.buatPolling(g.id, v.q, o);
         nt(g, 'Polling baru: ' + v.q);
       },
     );
   },
-  vote(g, d) {
-    const p = g.polls.find(x => x.id == d.p);
-    if (p.closed) return;
-    p.o.forEach(o => (o.v = o.v.filter(n => n != me)));
-    p.o.find(o => o.id == d.i).v.push(me);
-    save();
-    render();
+  async vote(g, d) {
+    await API.fungsi('pilih_opsi', { p: d.p, o: d.i });
+    await segar();
   },
-  closepoll(g, d) {
-    g.polls.find(x => x.id == d.i).closed = 1;
-    save();
-    render();
+  async closepoll(g, d) {
+    await API.ubah('grup_polling', d.i, { ditutup: true });
+    await segar();
   },
   addnote(g) {
     form(
@@ -303,21 +282,21 @@ const ACT = {
         { k: 'nm', l: 'Materi berikutnya' },
       ],
       {},
-      v => {
-        (g.notes = g.notes || []).unshift({ id: uid(), ...v });
+      async v => {
+        await API.tambah('grup_catatan', {
+          grup_id: g.id,
+          judul: v.title,
+          materi: v.mat,
+          pembahasan: v.disc,
+          kesimpulan: v.concl,
+          tugas_berikut: v.nt || '',
+          materi_berikut: v.nm || '',
+        });
       },
     );
   },
   delnote(g, d) {
-    conf(
-      'Hapus catatan ini?',
-      () => {
-        g.notes = g.notes.filter(x => x.id != d.i);
-        save();
-        render();
-      },
-      'Hapus',
-    );
+    hapusItem('grup_catatan', d.i, 'Hapus catatan ini?');
   },
   addmat(g) {
     form(
@@ -330,17 +309,20 @@ const ACT = {
         { k: 'f', l: 'File', t: 'file', w: v => ['PDF', 'Dokumen', 'Gambar'].includes(v.ty) },
       ],
       { ty: 'PDF' },
-      v => {
+      async v => {
         if (v.ty == 'Link' && !ok(v.url)) return 'URL harus diawali http(s)://';
-        g.mats.unshift({
-          id: uid(),
-          n: v.n,
-          ty: v.ty,
+        const berkas = ['PDF', 'Dokumen', 'Gambar'].includes(v.ty) ? v.fF : null;
+        if (['PDF', 'Dokumen', 'Gambar'].includes(v.ty) && !berkas) return 'Pilih file dulu';
+        if (berkas && berkas.size > 20971520) return 'Ukuran file maksimal 20 MB';
+        const path = berkas ? await API.unggah(g.id, berkas) : '';
+        await API.tambah('grup_materi', {
+          grup_id: g.id,
+          nama: v.n,
+          tipe: v.ty,
           url: v.ty == 'Link' ? v.url : '',
-          tx: v.ty == 'Rangkuman' ? v.tx : '',
-          sz: v.fS || 0,
-          by: me,
-          ts: Date.now(),
+          isi: v.ty == 'Rangkuman' ? v.tx : '',
+          path_file: path,
+          ukuran: berkas ? berkas.size : 0,
         });
         nt(g, 'Materi baru: ' + v.n);
       },
@@ -352,47 +334,51 @@ const ACT = {
       `<h3>${H(m.n)}</h3><p style="white-space:pre-wrap">${H(m.tx)}</p><div class=krow><button class="kbtn ghost" data-a=close>Tutup</button></div>`,
     );
   },
+  async openmat(g, d) {
+    /* Dibuka dulu sebelum await, supaya tidak diblokir sebagai popup. */
+    const w = window.open('');
+    try {
+      w.location = await API.materiUrl(g.mats.find(x => x.id == d.i).path);
+    } catch (e) {
+      w.close();
+      throw e;
+    }
+  },
   delmat(g, d) {
+    const m = g.mats.find(x => x.id == d.i);
     conf(
       'Hapus materi ini?',
-      () => {
-        g.mats = g.mats.filter(x => x.id != d.i);
-        save();
-        render();
+      async () => {
+        await API.hapus('grup_materi', m.id);
+        if (m.path) await API.hapusFile(m.path);
+        await segar();
       },
       'Hapus',
     );
   },
-  acc(g, d) {
-    if (addMem(g, +d.u)) {
-      g.reqs = g.reqs.filter(n => n != d.u);
-      nt(g, 'Permintaan ' + un(d.u) + ' diterima');
-      save();
-      render();
-    }
+  async acc(g, d) {
+    await API.fungsi('jawab_permintaan', { g: g.id, u: d.u, terima: true });
+    nt(g, 'Permintaan ' + un(d.u) + ' diterima');
+    await segar();
   },
-  rej(g, d) {
-    g.reqs = g.reqs.filter(n => n != d.u);
-    save();
-    render();
+  async rej(g, d) {
+    await API.fungsi('jawab_permintaan', { g: g.id, u: d.u, terima: false });
+    await segar();
   },
-  promote(g, d) {
-    g.members.find(x => x.id == d.u).r = 'co';
-    save();
-    render();
+  async promote(g, d) {
+    await API.setPeran(g.id, d.u, 'co');
+    await segar();
   },
-  demote(g, d) {
-    g.members.find(x => x.id == d.u).r = 'member';
-    save();
-    render();
+  async demote(g, d) {
+    await API.setPeran(g.id, d.u, 'member');
+    await segar();
   },
   kick(g, d) {
     conf(
       'Hapus ' + H(un(d.u)) + ' dari kelompok?',
-      () => {
-        g.members = g.members.filter(x => x.id != d.u);
-        save();
-        render();
+      async () => {
+        await API.keluarkan(g.id, d.u);
+        await segar();
       },
       'Hapus',
     );
@@ -402,8 +388,8 @@ const ACT = {
       .filter(x => !g.members.some(m => m.id == x.id) && !g.invited.includes(x.id))
       .map(x => [x.id, x.n + ' · ' + x.p]);
     if (!o.length) return toast('Tidak ada mahasiswa yang bisa diundang');
-    form('Undang Anggota', [{ k: 'n', l: 'Mahasiswa', t: 'select', o, req: 1 }], {}, v => {
-      g.invited.push(+v.n);
+    form('Undang Anggota', [{ k: 'n', l: 'Mahasiswa', t: 'select', o, req: 1 }], {}, async v => {
+      await API.tambah('grup_undangan', { grup_id: g.id, user_id: v.n });
       toast('Undangan dikirim ke ' + un(v.n));
     });
   },

@@ -30,7 +30,7 @@ const act = u => {
     ? `<button class="btn y w" onclick="event.stopPropagation();chat('c${u.id}')">💬 Mulai Chat</button>`
     : s
       ? `<button class="btn w" disabled>⏳ Menunggu persetujuan…</button>`
-      : `<button class="btn w" onclick="event.stopPropagation();conn(${u.id})">🤝 Kirim Permintaan Connect</button>`;
+      : `<button class="btn w" onclick="event.stopPropagation();conn('${u.id}')">🤝 Kirim Permintaan Connect</button>`;
 };
 V.home = () => {
   const r = S.nr,

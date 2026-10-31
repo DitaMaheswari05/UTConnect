@@ -4,6 +4,12 @@ function go(t) {
   R();
 }
 function R() {
+  /* Render ulang dari realtime tidak boleh menghapus ketikan di kolom chat. */
+  const ci = ($('#ci') || {}).value;
+  gambar();
+  if (ci && $('#ci')) $('#ci').value = ci;
+}
+function gambar() {
   const a = $('#app');
   if (!S.role) {
     a.innerHTML =

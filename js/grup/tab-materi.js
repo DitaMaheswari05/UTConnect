@@ -5,7 +5,7 @@ function materi(g, A) {
       ? g.mats
           .map(
             m =>
-              `<div class=it><b>${H(m.n)}</b> <span class="bd">${m.ty}</span><br>${fS(m.sz)} · oleh ${H(un(m.by))} · ${new Date(m.ts).toLocaleDateString('id-ID')}<br>${m.url ? `<a href="${H(m.url)}" target=_blank rel=noopener>Buka</a> ` : ''}${m.tx ? `<button class=sm data-a=viewmat data-i=${m.id}>Lihat</button> ` : ''}${m.by == me || A ? `<button class="sm d" data-a=delmat data-i=${m.id}>Hapus</button>` : ''}</div>`,
+              `<div class=it><b>${H(m.n)}</b> <span class="bd">${m.ty}</span><br>${fS(m.sz)} · oleh ${H(un(m.by))} · ${new Date(m.ts).toLocaleDateString('id-ID')}<br>${ok(m.url) ? `<a href="${H(m.url)}" target=_blank rel=noopener>Buka</a> ` : ''}${m.path ? `<button class=sm data-a=openmat data-i=${m.id}>Buka</button> ` : ''}${m.tx ? `<button class=sm data-a=viewmat data-i=${m.id}>Lihat</button> ` : ''}${m.by == me || A ? `<button class="sm d" data-a=delmat data-i=${m.id}>Hapus</button>` : ''}</div>`,
           )
           .join('')
       : em('Belum ada materi.', 'Upload materi pertama untuk membantu kelompok belajar.')) +

@@ -1,0 +1,576 @@
+{
+  "mahasiswa": [
+    {
+      "nim": "049100101",
+      "nama": "Rina Amelia",
+      "fakultas": "FEB",
+      "prodi": "Manajemen",
+      "semester": 5,
+      "lat": -6.9147,
+      "lng": 107.6098,
+      "mk": [
+        "Pengantar Manajemen",
+        "Statistika Ekonomi"
+      ],
+      "topik": [
+        "Manajemen Operasi"
+      ],
+      "minat": [
+        "Bisnis",
+        "Organisasi"
+      ],
+      "waktu": [
+        "Malam"
+      ]
+    },
+    {
+      "nim": "049100102",
+      "nama": "Dimas Prakoso",
+      "fakultas": "FST",
+      "prodi": "Sistem Informasi",
+      "semester": 3,
+      "lat": -6.9021,
+      "lng": 107.6186,
+      "mk": [
+        "Algoritma & Pemrograman",
+        "Statistika Ekonomi"
+      ],
+      "topik": [
+        "Pemrograman",
+        "Uji Hipotesis"
+      ],
+      "minat": [
+        "Coding"
+      ],
+      "waktu": [
+        "Weekend",
+        "Malam"
+      ]
+    },
+    {
+      "nim": "049100103",
+      "nama": "Siti Nurhaliza",
+      "fakultas": "FKIP",
+      "prodi": "Pendidikan Guru Sekolah Dasar (PGSD)",
+      "semester": 7,
+      "lat": -6.9318,
+      "lng": 107.605,
+      "mk": [
+        "Psikologi Pendidikan",
+        "Bahasa Inggris"
+      ],
+      "topik": [
+        "Skripsi"
+      ],
+      "minat": [
+        "Mengajar",
+        "Membaca"
+      ],
+      "waktu": [
+        "Weekend"
+      ]
+    },
+    {
+      "nim": "049100104",
+      "nama": "Agus Wirawan",
+      "fakultas": "FHISIP",
+      "prodi": "Ilmu Administrasi Publik (S1)",
+      "semester": 4,
+      "lat": -6.9244,
+      "lng": 107.636,
+      "mk": [
+        "Pengantar Ilmu Administrasi"
+      ],
+      "topik": [
+        "Hukum Administrasi"
+      ],
+      "minat": [
+        "Organisasi"
+      ],
+      "waktu": [
+        "Pagi",
+        "Weekend"
+      ]
+    },
+    {
+      "nim": "049100105",
+      "nama": "Putri Maharani",
+      "fakultas": "FEB",
+      "prodi": "Akuntansi",
+      "semester": 6,
+      "lat": -6.895,
+      "lng": 107.61,
+      "mk": [
+        "Pengantar Akuntansi",
+        "Statistika Ekonomi",
+        "Pengantar Manajemen"
+      ],
+      "topik": [
+        "Laporan Keuangan"
+      ],
+      "minat": [
+        "Bisnis"
+      ],
+      "waktu": [
+        "Malam"
+      ]
+    },
+    {
+      "nim": "049100106",
+      "nama": "Fajar Nugraha",
+      "fakultas": "FST",
+      "prodi": "Statistika",
+      "semester": 2,
+      "lat": -6.9402,
+      "lng": 107.628,
+      "mk": [
+        "Statistika Ekonomi",
+        "Algoritma & Pemrograman"
+      ],
+      "topik": [
+        "Uji Hipotesis"
+      ],
+      "minat": [
+        "Coding",
+        "Fotografi"
+      ],
+      "waktu": [
+        "Weekend"
+      ]
+    },
+    {
+      "nim": "049100107",
+      "nama": "Lestari Dewi",
+      "fakultas": "FHISIP",
+      "prodi": "Ilmu Komunikasi (S1)",
+      "semester": 5,
+      "lat": -6.9099,
+      "lng": 107.59,
+      "mk": [
+        "Pengantar Ilmu Administrasi",
+        "Bahasa Inggris"
+      ],
+      "topik": [
+        "Grammar"
+      ],
+      "minat": [
+        "Fotografi",
+        "Membaca"
+      ],
+      "waktu": [
+        "Malam",
+        "Weekend"
+      ]
+    },
+    {
+      "nim": "049100108",
+      "nama": "Budi Santoso",
+      "fakultas": "FKIP",
+      "prodi": "Pendidikan Bahasa Inggris",
+      "semester": 8,
+      "lat": -6.945,
+      "lng": 107.595,
+      "mk": [
+        "Bahasa Inggris",
+        "Psikologi Pendidikan"
+      ],
+      "topik": [
+        "Grammar",
+        "Skripsi"
+      ],
+      "minat": [
+        "Mengajar"
+      ],
+      "waktu": [
+        "Pagi"
+      ]
+    },
+    {
+      "nim": "049100109",
+      "nama": "Anisa Rahma",
+      "fakultas": "FEB",
+      "prodi": "Manajemen",
+      "semester": 3,
+      "lat": -6.9185,
+      "lng": 107.624,
+      "mk": [
+        "Pengantar Manajemen",
+        "Pengantar Akuntansi"
+      ],
+      "topik": [
+        "Manajemen Operasi",
+        "Laporan Keuangan"
+      ],
+      "minat": [
+        "Bisnis",
+        "Membaca"
+      ],
+      "waktu": [
+        "Weekend",
+        "Malam"
+      ]
+    },
+    {
+      "nim": "049100110",
+      "nama": "Reza Pratama",
+      "fakultas": "FST",
+      "prodi": "Agribisnis",
+      "semester": 4,
+      "lat": -6.933,
+      "lng": 107.618,
+      "mk": [
+        "Statistika Ekonomi",
+        "Pengantar Manajemen"
+      ],
+      "topik": [
+        "Uji Hipotesis"
+      ],
+      "minat": [
+        "Organisasi"
+      ],
+      "waktu": [
+        "Malam"
+      ]
+    }
+  ],
+  "registry_saja": [
+    {
+      "nim": "049123456",
+      "nama": "Andi Wijaya",
+      "fakultas": "FEB",
+      "prodi": "Manajemen"
+    },
+    {
+      "nim": "049123457",
+      "nama": "Andi Wijaya",
+      "fakultas": "FST",
+      "prodi": "Sistem Informasi"
+    },
+    {
+      "nim": "049123458",
+      "nama": "Maya Lestari",
+      "fakultas": "FKIP",
+      "prodi": "Pendidikan Matematika"
+    }
+  ],
+  "forum": [
+    {
+      "oleh": "049100102",
+      "mk": "Algoritma & Pemrograman",
+      "tipe": "Butuh bantuan",
+      "isi": "Butuh bantuan untuk ALGO4 modul 3 (perulangan bersarang). Ada yang punya contoh soal?",
+      "tawaran": 2,
+      "lalu": "2 hours"
+    },
+    {
+      "oleh": "049100109",
+      "mk": "Pengantar Manajemen",
+      "tipe": "Butuh bantuan",
+      "isi": "Butuh bantuan untuk EKMA4116 Bab 2 tentang fungsi manajemen, mohon penjelasannya 🙏",
+      "tawaran": 3,
+      "lalu": "5 hours"
+    },
+    {
+      "oleh": "049100106",
+      "mk": "Statistika Ekonomi",
+      "tipe": "Bisa bantu",
+      "isi": "Bisa bantu Statistika (uji hipotesis & regresi). Online malam hari, gratis.",
+      "tawaran": 5,
+      "lalu": "1 day"
+    }
+  ],
+  "info": [
+    {
+      "lingkup": "ut",
+      "kategori": "Lomba",
+      "judul": "Lomba Karya Tulis Mahasiswa UT 2026",
+      "isi": "Pendaftaran dibuka sampai 30 Okt. Tema: Pendidikan Inklusif.",
+      "nama_penulis": "Biro Kemahasiswaan UT",
+      "peran": "Staff UT",
+      "lalu": "1 days"
+    },
+    {
+      "lingkup": "ut",
+      "kategori": "Seminar",
+      "judul": "Webinar Karier: Menembus Dunia Kerja Sambil Kuliah",
+      "isi": "Sabtu 18 Okt, 09.00 WIB via Zoom. Gratis + e-sertifikat.",
+      "nama_penulis": "Dr. Hendra S.",
+      "peran": "Dosen",
+      "lalu": "2 days"
+    },
+    {
+      "lingkup": "ut",
+      "kategori": "Tips",
+      "judul": "5 Tips Atur Jadwal Belajar Mandiri",
+      "isi": "Pakai teknik pomodoro, cicil 1 bab per hari, dan ikut tutorial online.",
+      "nama_penulis": "Rina A.",
+      "peran": "Mahasiswa",
+      "lalu": "3 days"
+    },
+    {
+      "lingkup": "ut",
+      "kategori": "UKM",
+      "judul": "Open Recruitment UKM Fotografi UT Bandung",
+      "isi": "Terbuka untuk semua semester. Daftar via form.",
+      "nama_penulis": "UKM Foto UT",
+      "peran": "Mahasiswa",
+      "lalu": "4 days"
+    },
+    {
+      "lingkup": "ut",
+      "kategori": "HIMA",
+      "judul": "HIMA FEB: Kelas Persiapan UAS",
+      "isi": "Kelas gratis Manajemen & Akuntansi tiap Minggu.",
+      "nama_penulis": "HIMA FEB UT",
+      "peran": "Mahasiswa",
+      "lalu": "5 days"
+    },
+    {
+      "lingkup": "um",
+      "kategori": "Loker",
+      "judul": "Lowongan Staf Administrasi - Bandung",
+      "isi": "Paruh waktu cocok untuk mahasiswa. Kirim CV sebelum 25 Okt.",
+      "nama_penulis": "Admin Info",
+      "peran": "Staff UT",
+      "lalu": "1 days"
+    },
+    {
+      "lingkup": "um",
+      "kategori": "Seminar",
+      "judul": "Workshop UMKM Digital Jawa Barat",
+      "isi": "Rabu 22 Okt, Gedung Sate. Pendaftaran terbuka umum.",
+      "nama_penulis": "Dinas Koperasi",
+      "peran": "Staff UT",
+      "lalu": "3 days"
+    },
+    {
+      "lingkup": "um",
+      "kategori": "Lomba",
+      "judul": "Hackathon Smart City Bandung",
+      "isi": "Hadiah total Rp25 juta. Tim 3 orang.",
+      "nama_penulis": "Komunitas Dev",
+      "peran": "Mahasiswa",
+      "lalu": "6 days"
+    }
+  ],
+  "grup": [
+    {
+      "nama": "Belajar Statistika Bareng",
+      "kode_mk": "MAT4213",
+      "tipe": "online",
+      "kapasitas": 10,
+      "hari": "Sabtu",
+      "mulai": "19:00",
+      "selesai": "21:00",
+      "platform": "Google Meet",
+      "lokasi": "",
+      "deskripsi": "Belajar statistika bersama untuk persiapan UAS.",
+      "tujuan": "Memahami distribusi normal dan uji hipotesis.",
+      "aturan": "Saling menghargai dan hadir tepat waktu.",
+      "gabung": "approval",
+      "link": "https://meet.google.com/",
+      "anggota": [
+        "049100103",
+        "049100102",
+        "049100108",
+        "049100106",
+        "049100104"
+      ],
+      "minta": [
+        "049100105"
+      ],
+      "target": [
+        {
+          "judul": "Membaca Modul 1-3",
+          "selesai": true
+        },
+        {
+          "judul": "Mengerjakan latihan Modul 3",
+          "selesai": true
+        },
+        {
+          "judul": "Membahas soal UAS",
+          "selesai": false
+        },
+        {
+          "judul": "Simulasi UAS",
+          "selesai": false
+        }
+      ],
+      "pertemuan": [
+        {
+          "judul": "Pertemuan #4",
+          "tanggal": "2026-10-10",
+          "mulai": "19:00",
+          "selesai": "21:00",
+          "materi": "Distribusi Normal"
+        }
+      ],
+      "tugas": [
+        {
+          "judul": "Baca Modul 5",
+          "tenggat": "2026-10-12",
+          "prioritas": "Sedang",
+          "oleh": "049100103",
+          "status": "Belum dimulai"
+        },
+        {
+          "judul": "Kerjakan latihan soal",
+          "tenggat": "2026-10-14",
+          "prioritas": "Tinggi",
+          "oleh": "049100102",
+          "status": "Sedang dikerjakan"
+        }
+      ],
+      "pesan": []
+    },
+    {
+      "nama": "Akuntansi Dasar Weekend",
+      "kode_mk": "MATA4101",
+      "tipe": "offline",
+      "kapasitas": 8,
+      "hari": "Minggu",
+      "mulai": "10:00",
+      "selesai": "12:00",
+      "platform": "",
+      "lokasi": "Cafe Dago, Bandung",
+      "deskripsi": "",
+      "tujuan": "",
+      "aturan": "",
+      "gabung": "open",
+      "link": "",
+      "anggota": [
+        "049100109",
+        "049100110",
+        "049100107",
+        "049100101"
+      ],
+      "minta": [],
+      "target": [],
+      "pertemuan": [],
+      "tugas": [],
+      "pesan": []
+    },
+    {
+      "nama": "Skripsi Circle",
+      "kode_mk": "IF4001",
+      "tipe": "online",
+      "kapasitas": 6,
+      "hari": "Jumat",
+      "mulai": "16:00",
+      "selesai": "18:00",
+      "platform": "Zoom",
+      "lokasi": "",
+      "deskripsi": "",
+      "tujuan": "",
+      "aturan": "",
+      "gabung": "private",
+      "link": "https://zoom.us/",
+      "anggota": [
+        "049100110",
+        "049100103",
+        "049100102"
+      ],
+      "minta": [],
+      "target": [],
+      "pertemuan": [],
+      "tugas": [],
+      "pesan": []
+    },
+    {
+      "nama": "Pejuang Pengantar Manajemen",
+      "kode_mk": "EKMA4116",
+      "tipe": "online",
+      "kapasitas": 15,
+      "hari": "Senin",
+      "mulai": "20:00",
+      "selesai": "21:30",
+      "platform": "Google Meet",
+      "lokasi": "",
+      "deskripsi": "",
+      "tujuan": "",
+      "aturan": "",
+      "gabung": "open",
+      "link": "https://meet.google.com/",
+      "anggota": [
+        "049100101",
+        "049100109"
+      ],
+      "minta": [],
+      "target": [],
+      "pertemuan": [],
+      "tugas": [],
+      "pesan": [
+        {
+          "oleh": "049100101",
+          "isi": "Besok malam bahas Bab 2 ya, jam 20.00"
+        },
+        {
+          "oleh": "049100109",
+          "isi": "Siap! Aku siapin ringkasan"
+        }
+      ]
+    },
+    {
+      "nama": "Statistika Bandung Barat",
+      "kode_mk": "MAT4213",
+      "tipe": "offline",
+      "kapasitas": 8,
+      "hari": "Sabtu",
+      "mulai": "10:00",
+      "selesai": "12:00",
+      "platform": "",
+      "lokasi": "Cafe area Bandung Kota",
+      "deskripsi": "",
+      "tujuan": "",
+      "aturan": "",
+      "gabung": "open",
+      "link": "",
+      "anggota": [
+        "049100106",
+        "049100105",
+        "049100110"
+      ],
+      "minta": [],
+      "target": [],
+      "pertemuan": [],
+      "tugas": [],
+      "pesan": [
+        {
+          "oleh": "049100106",
+          "isi": "Sabtu ini ketemu di perpus daerah?"
+        }
+      ]
+    },
+    {
+      "nama": "Ngoding Bareng UT",
+      "kode_mk": "ALGO4",
+      "tipe": "online",
+      "kapasitas": 20,
+      "hari": "Sabtu",
+      "mulai": "19:00",
+      "selesai": "21:00",
+      "platform": "Lainnya",
+      "lokasi": "",
+      "deskripsi": "",
+      "tujuan": "",
+      "aturan": "",
+      "gabung": "open",
+      "link": "https://discord.com/",
+      "anggota": [
+        "049100102",
+        "049100106"
+      ],
+      "minta": [],
+      "target": [],
+      "pertemuan": [],
+      "tugas": [],
+      "pesan": [
+        {
+          "oleh": "049100102",
+          "isi": "Ada yang paham rekursi? 😅"
+        }
+      ]
+    }
+  ]
+}

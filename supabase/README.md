@@ -1,12 +1,21 @@
 # Backend Supabase UTConnect
 
-Isi folder ini belum dijalankan ke project mana pun.
+Project yang dipakai ditentukan oleh `.env`. Setelah `.env` berubah, tulis ulang konfigurasi frontend:
+
+```
+node --env-file=.env scripts/buat-config.mjs
+```
+
+`js/core/config.js` hasil perintah itu tidak masuk repo. Di server deploy, jalankan perintah yang sama sebagai
+langkah build, dengan `SUPABASE_URL` dan `SUPABASE_PUBLISHABLE_KEY` diisi di environment variables-nya.
 
 | File | Isi |
 |---|---|
 | `migrations/..._skema.sql` | Tabel |
 | `migrations/..._fungsi.sql` | Fungsi backend: verifikasi NIM, jarak, grup, polling |
 | `migrations/..._keamanan.sql` | Hak akses, RLS, realtime, storage |
+| `migrations/..._konten.sql` | Urutan opsi polling, penulis Info Hub dari profil |
+| `migrations/..._email_bebas.sql` | Email daftar bebas, verifikasi lewat NIM, nama, fakultas, prodi |
 | `seed.sql` | Data master: fakultas, prodi, mata kuliah |
 | `nim_registry.contoh.csv` | Format data mahasiswa dari UT |
 
@@ -25,8 +34,8 @@ Isi folder ini belum dijalankan ke project mana pun.
    Kalau `supabase init` menanyakan folder yang sudah ada, pertahankan isi `migrations/`.
 
 3. Di dashboard, buka **Authentication > Sign In / Providers > Email** dan pastikan **Confirm email** aktif.
-   Verifikasi NIM bergantung pada ini: NIM dan nama bukan rahasia, jadi yang membuktikan
-   pemiliknya adalah akses ke email kampus.
+   Email pendaftaran bebas, jadi ini hanya membuktikan kepemilikan email, bukan kepemilikan NIM. Siapa pun
+   yang tahu NIM, nama, fakultas, dan prodi seseorang bisa mendaftar atas namanya.
 4. Di **Authentication > URL Configuration**, isi **Site URL** dengan alamat Vercel.
 5. Isi SMTP sendiri di **Authentication > SMTP**. SMTP bawaan Supabase dibatasi dan tidak untuk production.
 
@@ -35,7 +44,8 @@ Isi folder ini belum dijalankan ke project mana pun.
 Data asli jangan masuk repo. Taruh di `supabase/data/`, folder itu sudah ada di `.gitignore`.
 
 Kolom CSV mengikuti `nim_registry.contoh.csv`. Nama fakultas dan prodi harus persis sama dengan
-`seed.sql`, dan email harus huruf kecil. Impor lewat koneksi database dari dashboard:
+`seed.sql`. Kolom email boleh kosong karena tidak dipakai untuk verifikasi. Impor lewat koneksi database
+dari dashboard:
 
 ```
 psql "$SUPABASE_DB_URL" -c "\copy private.nim_registry (nim, nama, email, fakultas, prodi) from 'supabase/data/nim_registry.csv' csv header"
@@ -43,12 +53,25 @@ psql "$SUPABASE_DB_URL" -c "\copy private.nim_registry (nim, nama, email, fakult
 
 Tabel `private` tidak muncul di API Supabase, jadi `\copy` ini cara mengisinya.
 
+## Data demo
+
+Untuk project pengembangan saja. `demo/data.json` berisi mahasiswa contoh, NIM uji, forum, info, dan grup.
+Email akun demo `<nim>@demo.utconnect.test`, kata sandinya `DEMO_PASSWORD` di `.env`.
+
+```
+node --env-file=.env supabase/demo/muat.mjs
+psql "$SUPABASE_DB_URL" -f supabase/demo/hapus.sql
+```
+
+Perintah pertama mengisi, yang kedua menghapus. Hapus sebelum production. Untuk menguji daftar, pakai NIM uji
+di `demo/data.json` dengan email aktif apa pun.
+
 ## Aturan untuk kode klien
 
-- Hanya pakai anon key di browser. `service_role` key jangan pernah masuk ke frontend.
-- Daftar: `cek_nim()`, lalu `auth.signUp({ email, password, options: { data: { nim, semester } } })`.
+- Hanya pakai publishable key di browser. Secret key jangan pernah masuk ke frontend.
+- Daftar: `cek_nim()`, lalu `auth.signUp({ email, password, options: { data: { nim, nama, fakultas, prodi, semester } } })`.
   Pin disimpan dengan `set_lokasi()` setelah email dikonfirmasi dan pengguna login.
-- Login memakai email kampus dan kata sandi.
+- Login memakai email dan kata sandi.
 - Data mahasiswa lain hanya lewat `orang_sekitar()`, `direktori()`, dan `cari_nim()`.
 - Terima connect: update `koneksi.status` menjadi `ok`. Tolak: delete baris `koneksi`.
 - Batas percobaan: `cek_nim()` 10 kali per NIM per 15 menit dan 30 kali per IP per jam,

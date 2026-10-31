@@ -1,11 +1,11 @@
 async function conn(id) {
-  await API.connect(id);
-  await muat();
-  setTimeout(async () => {
-    if (!(await API.simulasiTerima(id))) return;
+  try {
+    await API.connect(id);
     await muat();
-    toast('Terhubung 🎉 Kamu bisa langsung mulai chat');
-  }, 1500);
+    toast('Permintaan connect terkirim');
+  } catch (e) {
+    toast(e.message);
+  }
 }
 async function jawab(id, terima) {
   try {
@@ -21,26 +21,40 @@ const pn = k => {
   const u = pu(k);
   return u ? u.n.split(' ')[0] : '';
 };
-function chat(k) {
-  if (pu(k).st != 'ok') return toast('Connect dulu untuk mulai chat');
-  if (!S.ch[k]) S.ch[k] = [{ a: pn(k), t: 'Hai! Makasih sudah connect 👋' }];
-  S.foc = 1;
-  ov(k);
+async function bacaChat(k) {
+  S.ch[k] = (await API.pesan(k.slice(1))).map(m => ({ ...m, a: pn(k) }));
 }
-function send(k) {
+async function chat(k) {
+  if (pu(k).st != 'ok') return toast('Connect dulu untuk mulai chat');
+  try {
+    await bacaChat(k);
+    S.foc = 1;
+    ov(k);
+  } catch (e) {
+    toast(e.message);
+  }
+}
+async function send(k) {
   const i = $('#ci'),
     v = i.value.trim();
   if (!v) return;
-  if (!S.ch[k]) chat(k);
-  S.ch[k].push({ me: 1, t: v });
+  i.value = '';
+  try {
+    await API.kirimPesan(k.slice(1), v);
+    await bacaChat(k);
+    S.foc = 1;
+    R();
+  } catch (e) {
+    i.value = v;
+    toast(e.message);
+  }
+}
+/* Pesan masuk lewat realtime. */
+async function pesanBaru({ new: m }) {
+  if (!m || m.dari == S.me.id) return;
+  const k = 'c' + m.dari;
+  if (S.ov != k) return toast('Pesan baru dari ' + (pn(k) || 'teman'));
+  await bacaChat(k);
   S.foc = 1;
   R();
-  setTimeout(() => {
-    S.ch[k].push({
-      a: pn(k),
-      t: 'Siap, boleh banget! Kapan kita belajar bareng?',
-    });
-    S.foc = S.ov == k;
-    R();
-  }, 1200);
 }

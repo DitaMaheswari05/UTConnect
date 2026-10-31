@@ -7,19 +7,28 @@ V.forum = () =>
     .map(x => `<option>${x}</option>`)
     .join(
       '',
-    )}</select><button class=btn onclick="post()">Posting</button></div></div>${P.map(p => `<div class=card><div class=row><div class=f><b>${esc(un(p.by))}</b> <span class=m>· ${p.w}</span></div><span class=tag>${p.t}</span></div><p style="margin:6px 0">${esc(p.x)}</p><span class="tag b">${p.mk}</span><div class=row style="margin-top:8px"><span class=m>🙋 ${p.h + (S.off[p.id] ? 1 : 0)} orang menawarkan bantuan</span><button class="btn s ${S.off[p.id] ? 'y' : ''}" onclick="S.off['${p.id}']=!S.off['${p.id}'];R();toast('${S.off[p.id] ? 'Dibatalkan' : 'Penawaran bantuan dikirim'}')">${S.off[p.id] ? '✓ Ditawarkan' : '🙋 Tawarkan Bantuan'}</button></div></div>`).join('')}`;
-function post() {
-  const x = $('#px').value.trim();
+    )}</select><button class=btn onclick="post()">Posting</button></div></div>${S.forum.map(p => `<div class=card><div class=row><div class=f><b>${esc(un(p.by))}</b> <span class=m>· ${lalu(p.ts)}</span></div><span class=tag>${esc(p.t)}</span></div><p style="margin:6px 0">${esc(p.x)}</p><span class="tag b">${esc(p.mk)}</span><div class=row style="margin-top:8px"><span class=m>🙋 ${p.h} orang menawarkan bantuan</span><button class="btn s ${p.off ? 'y' : ''}" onclick="tawar('${p.id}')">${p.off ? '✓ Ditawarkan' : '🙋 Tawarkan Bantuan'}</button></div></div>`).join('')}`;
+async function post() {
+  const i = $('#px'),
+    x = i.value.trim();
   if (!x) return toast('Tulis isi postingan');
-  P.unshift({
-    id: uid(),
-    by: S.me.id,
-    mk: $('#pm').value,
-    t: $('#pt').value,
-    x,
-    h: 0,
-    w: 'baru saja',
-  });
-  R();
-  toast('Terposting ✓');
+  try {
+    await API.postForum($('#pm').value, $('#pt').value, x);
+    S.forum = await API.forum();
+    R();
+    toast('Terposting ✓');
+  } catch (e) {
+    toast(e.message);
+  }
+}
+async function tawar(id) {
+  const p = S.forum.find(x => x.id == id);
+  try {
+    await API.tawarkan(id, !p.off);
+    S.forum = await API.forum();
+    R();
+    toast(p.off ? 'Dibatalkan' : 'Penawaran bantuan dikirim');
+  } catch (e) {
+    toast(e.message);
+  }
 }

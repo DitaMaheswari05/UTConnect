@@ -24,25 +24,29 @@ function collect() {
     if (el.type == 'file') {
       const f = el.files[0];
       if (f) {
-        FM.vals[k + 'N'] = f.name;
-        FM.vals[k + 'KS'] = f.size;
+        FM.vals[k + 'F'] = f;
       }
     } else FM.vals[k] = el.value.trim();
   });
 }
-function fsave() {
+async function fsave() {
+  if (FM.sibuk) return;
   collect();
   const { fs, vals, cb } = FM;
   for (const f of fs) {
     if (f.req && (!f.w || f.w(vals)) && !vals[f.k]) return drawForm(f.l + ' wajib diisi');
   }
-  const e = cb(vals);
-  if (e) drawForm(e);
-  else {
-    kClose();
-    save();
-    render();
+  FM.sibuk = 1;
+  let e;
+  try {
+    e = await cb(vals);
+  } catch (x) {
+    e = x.message;
   }
+  FM.sibuk = 0;
+  if (e) return drawForm(e);
+  kClose();
+  await segar();
 }
 function gfields() {
   return [
@@ -70,22 +74,20 @@ function gcheck(v, min) {
   if (v.end <= v.start) return 'Jam selesai harus setelah jam mulai';
   if (v.type == 'Online' && !ok(v.link)) return 'Link meeting harus diawali http(s)://';
 }
-function apply(g, v) {
-  Object.assign(g, {
-    name: v.name,
-    course: v.course.toUpperCase(),
-    desc: v.desc,
-    goal: v.goal,
-    type: v.type.toLowerCase(),
-    cap: +v.cap,
-    day: v.day,
-    start: v.start,
-    end: v.end,
-    platform: v.type == 'Online' ? v.platform : '',
-    link: v.type == 'Online' ? v.link : '',
-    loc: v.type == 'Offline' ? v.loc : '',
-    addr: v.type == 'Offline' ? v.addr : '',
-    join: JK[JM.indexOf(v.join)],
-    rules: v.rules,
-  });
-}
+const gBaris = v => ({
+  nama: v.name,
+  kode_mk: v.course.toUpperCase(),
+  deskripsi: v.desc || '',
+  tujuan: v.goal || '',
+  tipe: v.type.toLowerCase(),
+  kapasitas: +v.cap,
+  hari: v.day,
+  mulai: v.start,
+  selesai: v.end,
+  platform: v.type == 'Online' ? v.platform : '',
+  lokasi: v.type == 'Offline' ? v.loc : '',
+  alamat: v.type == 'Offline' ? v.addr || '' : '',
+  gabung: JK[JM.indexOf(v.join)],
+  aturan: v.rules || '',
+});
+const gLink = v => (v.type == 'Online' ? v.link : '');

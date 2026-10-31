@@ -8,9 +8,9 @@ try {
     const d = b.dataset,
       g = KG(d.id || KV.id),
       f = ACT[d.a];
-    if (f) f(g, d);
+    if (f) Promise.resolve(f(g, d)).catch(x => toast(x.message));
   });
-  document.addEventListener('change', e => {
+  document.addEventListener('change', async e => {
     const t = e.target,
       c = t.dataset.c,
       g = KS && KG(KV.id);
@@ -23,14 +23,14 @@ try {
       KV[c] = t.value;
       return render();
     }
-    if (c == 'tg') {
-      g.targets.find(x => x.id == t.dataset.i).done = t.checked ? 1 : 0;
+    if (c != 'tg' && c != 'tst') return;
+    try {
+      if (c == 'tg') await API.ubah('grup_target', t.dataset.i, { selesai: t.checked });
+      else await API.ubah('grup_tugas', t.dataset.i, { status: t.value });
+    } catch (x) {
+      toast(x.message);
     }
-    if (c == 'tst') {
-      g.tasks.find(x => x.id == t.dataset.i).st = t.value;
-    }
-    save();
-    render();
+    await segar();
   });
   document.addEventListener('input', e => {
     if (e.target.id == 'kq') {
@@ -39,7 +39,7 @@ try {
     }
   });
   document.addEventListener('keydown', e => {
-    if (e.key == 'Enter' && e.target.id == 'kci') ACT.send(KG(KV.id));
+    if (e.key == 'Enter' && e.target.id == 'kci') ACT.send(KG(KV.id)).catch(x => toast(x.message));
   });
   $('#md').addEventListener('click', e => {
     if (e.target.id == 'md') kClose();
